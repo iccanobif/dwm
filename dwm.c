@@ -66,6 +66,7 @@ enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
 enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
+enum { Left, TopLeft, BottomLeft, Right, TopRight, BottomRight, Maximized };
 
 typedef union {
 	int i;
@@ -93,6 +94,7 @@ struct Client {
 	int bw, oldbw;
 	unsigned int tags;
 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+	unsigned int position;
 	Client *next;
 	Client *snext;
 	Monitor *mon;
@@ -139,6 +141,7 @@ typedef struct {
 	unsigned int tags;
 	int isfloating;
 	int monitor;
+	int border;
 } Rule;
 
 /* function declarations */
@@ -209,6 +212,7 @@ static void spawn(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *);
+static void bifMode(Monitor *);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
@@ -302,6 +306,8 @@ applyrules(Client *c)
 			for (m = mons; m && m->num != r->monitor; m = m->next);
 			if (m)
 				c->mon = m;
+			if (r->border != -1)
+				c->bw = r->border;
 		}
 	}
 	if (ch.res_class)
@@ -1029,8 +1035,12 @@ manage(Window w, XWindowAttributes *wa)
 	c->w = c->oldw = wa->width;
 	c->h = c->oldh = wa->height;
 	c->oldbw = wa->border_width;
+	c->position = Maximized;
 
 	updatetitle(c);
+
+	c->bw = borderpx;
+
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
 		c->mon = t->mon;
 		c->tags = t->tags;
@@ -1047,7 +1057,6 @@ manage(Window w, XWindowAttributes *wa)
 	/* only fix client y-offset, if the client center might cover the bar */
 	c->y = MAX(c->y, ((c->mon->by == c->mon->my) && (c->x + (c->w / 2) >= c->mon->wx)
 		&& (c->x + (c->w / 2) < c->mon->wx + c->mon->ww)) ? bh : c->mon->my);
-	c->bw = borderpx;
 
 	wc.border_width = c->bw;
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
@@ -1694,6 +1703,28 @@ tile(Monitor *m)
 			resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2*c->bw), h - (2*c->bw), 0);
 			ty += HEIGHT(c);
 		}
+}
+
+void
+bifMode(Monitor *m)
+{
+	Client *c;
+	printf("i'm in bif mode! cool!\n");
+
+	for (c = m->clients; c; c = c->next)
+	{
+		if (c->isfloating)
+			continue;
+
+		//TODO: make every window visible
+
+		switch (c->position)
+		{
+			case Maximized:
+			resize(c, m->wx, m->wy, m->ww, m->wh, 0);
+		}
+	}
+	// tile(m);
 }
 
 void
