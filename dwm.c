@@ -1020,12 +1020,29 @@ killclient(const Arg *arg)
 	}
 }
 
+int
+isTray(Window w)
+{
+	XClassHint ch = { NULL, NULL };
+	XGetClassHint(dpy, w, &ch);
+	printf("checking if is tray: %s\n", ch.res_class);
+	printf("checking if is tray: %s\n", ch.res_name);
+	return !(strcmp(ch.res_class, "trayer")
+	 		 && strcmp(ch.res_class, "panel"));
+}
+
 void
 manage(Window w, XWindowAttributes *wa)
 {
 	Client *c, *t = NULL;
 	Window trans = None;
 	XWindowChanges wc;
+
+	if (isTray(w))
+	{
+		XMapWindow(dpy, w);
+		return;
+	}
 
 	c = ecalloc(1, sizeof(Client));
 	c->win = w;
@@ -2019,7 +2036,7 @@ void
 updatestatus(void)
 {
 	if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext)))
-		strcpy(stext, "dwm-"VERSION);
+		strcpy(stext, "");
 	drawbar(selmon);
 }
 
