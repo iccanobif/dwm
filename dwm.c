@@ -45,11 +45,13 @@
 #include "util.h"
 
 /* macros */
+
+#define ISBIFMODE				!strcmp(selmon->ltsymbol, "bif")
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 #define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
                                * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
-#define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]))
+#define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]) || ISBIFMODE)
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
@@ -66,7 +68,8 @@ enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
 enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
-enum { Left, TopLeft, BottomLeft, Right, TopRight, BottomRight, Maximized };
+enum { Left, TopLeft, BottomLeft, Right, TopRight, BottomRight, Maximized }; /* window positions */
+enum { MoveLeft, MoveRight, MoveUp, MoveDown };
 
 typedef union {
 	int i;
@@ -199,6 +202,7 @@ static void run(void);
 static void scan(void);
 static int sendevent(Client *c, Atom proto);
 static void sendmon(Client *c, Monitor *m);
+static void setclientposition(const Arg *arg);
 static void setclientstate(Client *c, long state);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
@@ -1723,25 +1727,80 @@ tile(Monitor *m)
 }
 
 void
+setclientposition(const Arg *arg)
+{
+	if (!selmon->sel)
+		return;
+    selmon->sel->isfloating = 0;
+	switch (arg->ui)
+	{
+		// enum { Left, TopLeft, BottomLeft, Right, TopRight, BottomRight, Maximized }; /* window positions */
+		case MoveLeft:
+			selmon->sel->position = selmon->sel->position == Maximized ? Left :
+									selmon->sel->position == Left ? Left :
+									selmon->sel->position == Right ? Maximized : 
+									selmon->sel->position == TopRight ? TopLeft : 
+									selmon->sel->position == BottomRight ? BottomLeft : 
+									selmon->sel->position;
+			break;	
+		case MoveRight:
+			selmon->sel->position = selmon->sel->position == Maximized ? Right :
+									selmon->sel->position == Left ? Maximized :
+									selmon->sel->position == TopLeft ? TopRight : 
+									selmon->sel->position == BottomLeft ? BottomRight : 
+									selmon->sel->position == BottomRight ? BottomRight : 
+									selmon->sel->position;
+			break;
+		case MoveUp:
+			selmon->sel->position = selmon->sel->position == Maximized ? Maximized :
+									selmon->sel->position == Left ? TopLeft :
+									selmon->sel->position == Right ? TopRight :
+									selmon->sel->position == BottomLeft ? Left : 
+									selmon->sel->position == BottomRight ? Right : 
+									selmon->sel->position == TopLeft ? Maximized : 
+									selmon->sel->position == TopRight ? Maximized : 
+									selmon->sel->position;
+			break;
+		case MoveDown:
+			selmon->sel->position = selmon->sel->position == Maximized ? Left :
+									selmon->sel->position == Left ? BottomLeft :
+									selmon->sel->position == Right ? BottomRight :
+									selmon->sel->position == TopLeft ? Left : 
+									selmon->sel->position == TopRight ? Right : 
+									selmon->sel->position;
+			break;
+	}
+	if (ISBIFMODE)
+		arrange(selmon);
+}
+
+void
 bifMode(Monitor *m)
 {
 	Client *c;
-	printf("i'm in bif mode! cool!\n");
-
 	for (c = m->clients; c; c = c->next)
 	{
 		if (c->isfloating)
 			continue;
 
-		//TODO: make every window visible
-
 		switch (c->position)
 		{
 			case Maximized:
-			resize(c, m->wx, m->wy, m->ww, m->wh, 0);
+				resize(c, m->wx, m->wy, m->ww, m->wh, 0); break;
+			case Left:
+				resize(c, m->wx, m->wy, m->ww / 2, m->wh, 0); break;
+			case Right:
+				resize(c, m->ww / 2, m->wy, m->ww / 2, m->wh, 0); break;
+			case TopLeft:
+				resize(c, m->wx, m->wy, m->ww / 2, m->wh / 2, 0); break;
+			case BottomLeft:
+				resize(c, m->wx, m->wh / 2 + m->wy, m->ww / 2, m->wh / 2, 0); break;
+			case TopRight:
+				resize(c, m->ww / 2, m->wy, m->ww / 2, m->wh / 2, 0); break;
+			case BottomRight:
+				resize(c, m->ww / 2, m->wh / 2 + m->wy, m->ww / 2, m->wh / 2, 0); break;
 		}
 	}
-	// tile(m);
 }
 
 void
