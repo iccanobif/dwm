@@ -1,0 +1,12 @@
+- pigiare win+num deve mettere il focus al primo client di quel tag
+    - pigiarlo più volte ma tenendo win premuto deve scorrere tra tutte le finestre di quel tag
+- win+shift+freccia deve cambiare il monitor
+- alt+tab, alt+shift+tab
+    - deve scorrere nell'ordine che ci da anche X (lo z-index, per cosi' dire)
+    - non so se va bene dare il focus immediatamente o fare un popup come windows (potrebbero esserci casi in cui voglio evitare di
+    dare il focus a certe finestre, magari perchè sono in full screen)
+
+APPUNTI VARI:
+- bif mode dovrebbe lavorare su un set diverso di tag, in modo da rendere possibile muovere le finestre di qua e di là
+  nelle altre modalità e poi, una volta tornato a bif mode, le shortcut sono sempre quelle di prima
+  oppure potrebbe essere utile NON fare cosi', in modo da potere usare gli altri modi per cambiare dinamicamente il numero di una finestra...

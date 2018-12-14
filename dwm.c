@@ -1786,19 +1786,19 @@ bifMode(Monitor *m)
 		switch (c->position)
 		{
 			case Maximized:
-				resize(c, m->wx, m->wy, m->ww, m->wh, 0); break;
+				resize(c, m->wx, m->wy, m->ww - 2*c->bw, m->wh - 2*c->bw, 0); break;
 			case Left:
-				resize(c, m->wx, m->wy, m->ww / 2, m->wh, 0); break;
+				resize(c, m->wx, m->wy, m->ww / 2 - 2*c->bw, m->wh - 2*c->bw, 0); break;
 			case Right:
-				resize(c, m->ww / 2, m->wy, m->ww / 2, m->wh, 0); break;
+				resize(c, m->ww / 2, m->wy, m->ww / 2 - 2*c->bw, m->wh - 2*c->bw, 0); break;
 			case TopLeft:
-				resize(c, m->wx, m->wy, m->ww / 2, m->wh / 2, 0); break;
+				resize(c, m->wx, m->wy, m->ww / 2 - 2*c->bw, m->wh / 2 - 2*c->bw, 0); break;
 			case BottomLeft:
-				resize(c, m->wx, m->wh / 2 + m->wy, m->ww / 2, m->wh / 2, 0); break;
+				resize(c, m->wx, m->wh / 2 + m->wy, m->ww / 2 - 2*c->bw, m->wh / 2 - 2*c->bw, 0); break;
 			case TopRight:
-				resize(c, m->ww / 2, m->wy, m->ww / 2, m->wh / 2, 0); break;
+				resize(c, m->ww / 2, m->wy, m->ww / 2 - 2*c->bw, m->wh / 2 - 2*c->bw, 0); break;
 			case BottomRight:
-				resize(c, m->ww / 2, m->wh / 2 + m->wy, m->ww / 2, m->wh / 2, 0); break;
+				resize(c, m->ww / 2, m->wh / 2 + m->wy, m->ww / 2 - 2*c->bw, m->wh / 2 - 2*c->bw, 0); break;
 		}
 	}
 }
