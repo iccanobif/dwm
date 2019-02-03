@@ -46,7 +46,7 @@
 
 /* macros */
 
-#define ISBIFMODE				!strcmp(selmon->ltsymbol, "bif")
+#define ISBIFMODE				(!strcmp(selmon->ltsymbol, "bif"))
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 #define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
@@ -124,9 +124,9 @@ struct Monitor {
 	int by;               /* bar geometry */
 	int mx, my, mw, mh;   /* screen size */
 	int wx, wy, ww, wh;   /* window area  */
-	unsigned int seltags;
+	unsigned int seltags; // Possible values: 0 or 1
 	unsigned int sellt;
-	unsigned int tagset[2];
+	unsigned int tagset[2]; // Initialized with two tagsets, both with value "1"
 	int showbar;
 	int topbar;
 	Client *clients;
@@ -2142,13 +2142,32 @@ updatewmhints(Client *c)
 void
 view(const Arg *arg)
 {
-	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
-		return;
-	selmon->seltags ^= 1; /* toggle sel tagset */
-	if (arg->ui & TAGMASK)
-		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
-	focus(NULL);
-	arrange(selmon);
+	Arg newarg;
+	newarg.i = 1;
+	if (ISBIFMODE)
+    {
+		focusstack(&newarg);
+        // TODO
+        // Quando pigio win+num:
+		//    - pigiarlo più volte ma tenendo win premuto deve scorrere tra tutte le finestre di quel tag
+        //    - se per quel numero non c'e' nessuna finestra aperta, avvia l'applicazione
+        //    - se per quel numero c'e' un'unica finestra aperta:
+        //        - se non ha focus, dagli il focus
+        //        - se ha focus, toglilo
+        //    - se per quel numero c'e' piu' di una finestra aperta:
+        //        - se nessuna di quelle finestre ha focus, da' focus alla prima
+        //        - se una di quelle finestre ha focus, da' focus alla successiva
+    }
+    else
+    {
+        if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+            return;
+    }
+    selmon->seltags ^= 1; /* toggle sel tagset */
+    if (arg->ui & TAGMASK)
+        selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
+    focus(NULL);
+    arrange(selmon);
 }
 
 Client *

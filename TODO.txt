@@ -1,6 +1,16 @@
 - pigiare win+num deve mettere il focus al primo client di quel tag
     - pigiarlo più volte ma tenendo win premuto deve scorrere tra tutte le finestre di quel tag
+    - se per quel numero non c'e' nessuna finestra aperta, avvia l'applicazione
+    - se per quel numero c'e' un'unica finestra aperta:
+        - se non ha focus, dagli il focus
+        - se ha focus, toglilo
+    - se per quel numero c'e' piu' di una finestra aperta:
+        - se nessuna di quelle finestre ha focus, da' focus alla prima
+        - se una di quelle finestre ha focus, da' focus alla successiva
+- win+shift+numero deve sempre aprire una nuova istanza dell'applicazione
+    toggleview()
 - win+shift+freccia deve cambiare il monitor
+- win+freccia giu quando una finestra è già piccola nella metà bassa deve "minimizzare", ovvero nasconderla. potra' tornare visibile usando win+num
 - alt+tab, alt+shift+tab
     - deve scorrere nell'ordine che ci da anche X (lo z-index, per cosi' dire)
     - non so se va bene dare il focus immediatamente o fare un popup come windows (potrebbero esserci casi in cui voglio evitare di
